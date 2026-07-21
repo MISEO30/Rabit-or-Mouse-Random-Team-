@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mouse or Rabbit?</title>
+<style>
+  :root{
+    --cream:#FBF3E7;
+    --ink:#3A2E28;
+    --mouse:#9C8AD9;
+    --rabbit:#F2A6B0;
+    --whisker:#D8CBB8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Georgia', 'Iowan Old Style', serif;
+    background:var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .card{
+    max-width:460px;
+    width:100%;
+    text-align:center;
+  }
+  h1{
+    font-size:2.1rem;
+    margin:0 0 4px;
+    letter-spacing:-0.02em;
+  }
+  h1 .a{color:var(--mouse);}
+  h1 .b{color:var(--rabbit);}
+  p.sub{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.85rem;
+    color:#8a7c6f;
+    margin:0 0 28px;
+    letter-spacing:0.02em;
+  }
+  .step{display:none;}
+  .step.active{display:block;}
+
+  .dropzone{
+    border:2px dashed var(--whisker);
+    border-radius:18px;
+    padding:36px 20px;
+    cursor:pointer;
+    transition:border-color .2s, background .2s;
+    background:#fff8ef;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--ink);
+    background:#fff;
+  }
+  .dropzone svg{margin-bottom:10px;}
+  .dropzone .label{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.95rem;
+    font-weight:600;
+  }
+  .dropzone .hint{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.78rem;
+    color:#a89a8c;
+    margin-top:4px;
+  }
+  input[type=file]{display:none;}
+
+  .progress{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.78rem;
+    color:#a89a8c;
+    margin-bottom:14px;
+    letter-spacing:0.04em;
+  }
+  #preview{
+    max-width:220px;
+    border-radius:16px;
+    margin:0 auto 18px;
+    box-shadow:0 6px 20px rgba(58,46,40,0.15);
+    display:block;
+  }
+  .verdict{
+    font-size:1.6rem;
+    font-weight:bold;
+    margin-bottom:6px;
+  }
+  .verdict .mouse-word{color:var(--mouse);}
+  .verdict .rabbit-word{color:var(--rabbit);}
+  .caption{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.85rem;
+    color:#6b5d50;
+    margin-top:14px;
+    line-height:1.5;
+    font-style:italic;
+  }
+  .navrow{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-top:22px;
+  }
+  .navbtn{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.8rem;
+    background:none;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    padding:8px 18px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .navbtn:hover{background:var(--ink); color:var(--cream);}
+  .navbtn:disabled{opacity:0.35; cursor:default;}
+  .navbtn:disabled:hover{background:none; color:var(--ink);}
+
+  .thinking{
+    padding:40px 0;
+  }
+  .spinner{
+    width:38px;
+    height:38px;
+    margin:0 auto 18px;
+    border-radius:50%;
+    border:3px solid var(--whisker);
+    border-top-color:var(--rabbit);
+    animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{
+    to{transform:rotate(360deg);}
+  }
+  .thinking-text{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.9rem;
+    color:#8a7c6f;
+    font-style:italic;
+  }
+
+  .again{
+    margin-top:16px;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.75rem;
+    background:none;
+    border:none;
+    color:#a89a8c;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .disclaimer{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:0.68rem;
+    color:#b3a596;
+    margin-top:26px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1><span class="a">Mouse</span> or <span class="b">Rabbit</span>?</h1>
+  <p class="sub">a completely unscientific reading</p>
+
+  <!-- Step 1: upload all photos -->
+  <div class="step active" id="step1">
+    <div class="dropzone" id="dropzone">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="19" stroke="#3A2E28" stroke-width="1.2"/>
+        <path d="M12 24l6-7 5 5 5-8 6 10" stroke="#3A2E28" stroke-width="1.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="15" cy="14" r="2" fill="#3A2E28"/>
+      </svg>
+      <div class="label">Drop all photos at once, in order</div>
+      <div class="hint">your photos never leave this browser</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" multiple>
+  </div>
+
+  <!-- Step 1.5: thinking -->
+  <div class="step" id="stepThinking">
+    <div class="thinking">
+      <div class="spinner"></div>
+      <div class="thinking-text" id="thinkingText">reading the first face…</div>
+    </div>
+  </div>
+
+  <!-- Step 2: sequential results -->
+  <div class="step" id="step2">
+    <div class="progress" id="progress"></div>
+    <img id="preview" alt="photo">
+    <div class="verdict" id="verdictText"></div>
+    <div class="caption" id="caption"></div>
+    <div class="navrow">
+      <button class="navbtn" id="prevBtn">← prev</button>
+      <button class="navbtn" id="nextBtn">next →</button>
+    </div>
+    <button class="again" id="again">start over with new photos</button>
+  </div>
+
+  <div class="disclaimer">for entertainment only — not a real classification of anything</div>
+</div>
+
+<script>
+// Fixed result per upload position (1st photo uploaded, 2nd photo uploaded, ...)
+const SEQUENCE = ['rabbit','mouse','rabbit','mouse','mouse','rabbit','rabbit','mouse'];
+
+const mouseLines = [
+  "quick, alert, and probably the first to notice something's off in the room.",
+  "sharp-eyed and a little mischievous — a scout, not a follower.",
+  "compact features, big curiosity. classic scurry energy.",
+  "narrow and nimble — built for slipping through crowded places unnoticed."
+];
+const rabbitLines = [
+  "soft features and big presence — the kind of face people trust immediately.",
+  "calm, watchful, a little dramatic when startled. very rabbit of you.",
+  "gentle proportions with surprising speed when it matters.",
+  "warm and open — the face of someone who notices when you're upset."
+];
+
+const step1 = document.getElementById('step1');
+const stepThinking = document.getElementById('stepThinking');
+const step2 = document.getElementById('step2');
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const progress = document.getElementById('progress');
+const preview = document.getElementById('preview');
+const verdictText = document.getElementById('verdictText');
+const caption = document.getElementById('caption');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const again = document.getElementById('again');
+const thinkingText = document.getElementById('thinkingText');
+
+const thinkingPhrases = [
+  "studying the whiskers…",
+  "measuring the ears…",
+  "checking the nose…",
+  "consulting the forest council…",
+  "reading the face…",
+  "comparing to known rodents and lagomorphs…"
+];
+
+let photos = [];   // data URLs, in upload order
+let captionPick = []; // stable random caption line per index
+let current = 0;
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) handleFiles(e.target.files);
+});
+
+function handleFiles(fileList){
+  const files = Array.from(fileList).slice(0, SEQUENCE.length);
+  const readers = files.map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  }));
+  Promise.all(readers).then(results => {
+    photos = results;
+    captionPick = photos.map(() => Math.floor(Math.random() * 4));
+    current = 0;
+    step1.classList.remove('active');
+    thinkAndReveal();
+  });
+}
+
+function thinkAndReveal(){
+  step2.classList.remove('active');
+  stepThinking.classList.add('active');
+  thinkingText.textContent = thinkingPhrases[Math.floor(Math.random() * thinkingPhrases.length)];
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
+  setTimeout(() => {
+    stepThinking.classList.remove('active');
+    step2.classList.add('active');
+    render();
+  }, 4000);
+}
+
+function render(){
+  const result = SEQUENCE[current];
+  const isRabbit = result === 'rabbit';
+  const lines = isRabbit ? rabbitLines : mouseLines;
+
+  progress.textContent = `person ${current + 1} of ${photos.length}`;
+  preview.src = photos[current];
+  verdictText.innerHTML = isRabbit
+    ? `you're a <span class="rabbit-word">rabbit</span>`
+    : `you're a <span class="mouse-word">mouse</span>`;
+  caption.textContent = lines[captionPick[current]];
+
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === photos.length - 1;
+}
+
+prevBtn.addEventListener('click', () => { if (current > 0){ current--; render(); } });
+nextBtn.addEventListener('click', () => { if (current < photos.length - 1){ current++; thinkAndReveal(); } });
+
+again.addEventListener('click', () => {
+  photos = [];
+  fileInput.value = '';
+  step2.classList.remove('active');
+  stepThinking.classList.remove('active');
+  step1.classList.add('active');
+});
+</script>
+</body>
+</html>
